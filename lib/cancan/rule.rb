@@ -15,7 +15,7 @@ module CanCan
       @match_all = action.nil? && subject.nil?
       @base_behavior = base_behavior
       @actions = [action].flatten
-      @subjects = [subject].flatten
+      @subjects = subject.is_a?(Array) ? subject : [subject]
       @conditions = conditions || {}
       @block = block
     end
@@ -87,7 +87,7 @@ module CanCan
     end
 
     def matches_subject?(subject)
-      @subjects.include?(:all) || @subjects.include?(subject) || matches_subject_class?(subject)
+      @subjects.include?(:all) || @subjects.any?{ |s| s.is_a?(ActiveRecord::Relation) && s.exists?(subject) || s == subject } || matches_subject_class?(subject)
     end
 
     def matches_subject_class?(subject)
